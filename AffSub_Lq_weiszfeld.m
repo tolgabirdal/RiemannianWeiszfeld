@@ -28,7 +28,7 @@ for l=1:numPoints
         % now project onto plausible solutions
         Xnew = projFunc(Xnew);
         Xcur = Xnew;
-        %hold on, plot(Xcur(1), Xcur(2), 'ro');
+        %hold on, plot(Xcur(1), Xcur(2), 'go');
         %drawnow;
         %pause(0.1);
         i = i+1;

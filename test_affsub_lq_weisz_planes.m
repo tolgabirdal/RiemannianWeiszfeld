@@ -3,15 +3,16 @@ dim = 3;
 nPlanes = 32;
 % P1 = randn(2, nPlanes);
 % P2 = randn(2, nPlanes);
-P1 = [1 0 0; -1 0 0; 1 0 0; -1 0 0; 1 0 0; -1 0 0; 1 0 0; -1 0 0]';
-P2 = [0 1 0; 0 1 0; 0 -1 0; 0 -1 0; 0 1 0; 0 1 0; 0 -1 0; 0 -1 0]';
-P3 = [0 0 1; 0 0 1; 0 0 1; 0 0 1; 0 0 -1; 0 0 -1; 0 0 -1; 0 0 -1]';
+P1 = [1 0 0; -1 0 0; 1 0 0; -1 0 0; 1 0 0; -1 0 0; 1 0 0; -1 0 0]'+0.5;
+P2 = [0 1 0; 0 1 0; 0 -1 0; 0 -1 0; 0 1 0; 0 1 0; 0 -1 0; 0 -1 0]'+0.5;
+P3 = [0 0 1; 0 0 1; 0 0 1; 0 0 1; 0 0 -1; 0 0 -1; 0 0 -1; 0 0 -1]'+0.5;
 nPlanes = size(P1, 2);
 L = zeros(dim+1, nPlanes);
 x0 = zeros(3,1);
 
 figure;
 A = cell(nPlanes, 1);
+M = cell(nPlanes, 1);
 C = cell(nPlanes, 1);
 for i=1:nPlanes
     p1 = P1(:, i);
@@ -24,8 +25,11 @@ for i=1:nPlanes
     
     x0 = x0 + pavg;
     
-    Ai = eye(dim) - n*n';
+    Ai = n*n';
+    Mi = eye(dim) - Ai;
     Ci = pavg;
+    
+    M{i} = Mi;
     A{i} = Ai;
     C{i} = Ci;
         
@@ -34,9 +38,9 @@ end
 
 x0 = x0./nPlanes;
 hold on, plot3(x0(1), x0(2), x0(3), 'b+');
-x0 = [-1.5; 1.5; 1.5];
+%x0 = [-1.5; 1.5; 1.5];
 projFunc = @(x)(x);
-q = 1.0;
+q = 1.0001;
 iterations = 30;
 
 w = ones(nPlanes, 1);
@@ -46,12 +50,13 @@ hold on, plot3(xNormal(1), xNormal(2), xNormal(3), 'ko');
 disp ('euclidean:');
 err = 0;
 numValid = 0;
+noiseScale = 0.2;
 for trials = 1:1000
     Ak = A; Ck = C;
-    Ak{1} = Ak{1}+1.75*randn(dim);
-    Ck{1} = Ck{1}+1.75*randn(dim, 1);
-    Ak{5} = Ak{5}+1.75*randn(dim);
-    Ck{5} = Ck{5}+1.75*randn(dim, 1);
+    Ak{1} = Ak{1} + noiseScale*randn(dim);
+    Ck{1} = Ck{1} + noiseScale*randn(dim, 1);
+    Ak{5} = Ak{5} + noiseScale*randn(dim);
+    Ck{5} = Ck{5} + noiseScale*randn(dim, 1);
     %[X] = AffSub_Lq_weiszfeld(Ak, Ck, x0, q, iterations, projFunc);
     X = AffSub_solveNormal(w, Ak, Ck);
     if (norm(X)<300)
@@ -68,12 +73,16 @@ err = 0;
 numValid = 0;
 for trials = 1:1000
     Ak = A; Ck = C;
-    Ak{1} = Ak{1}+1.75*randn(dim);
-    Ck{1} = Ck{1}+1.75*randn(dim, 1);
-    Ak{5} = Ak{5}+1.75*randn(dim);
-    Ck{5} = Ck{5}+1.75*randn(dim, 1);
+    Ak{1} = Ak{1} + noiseScale*randn(dim);
+    Ck{1} = Ck{1} + noiseScale*randn(dim, 1);
+    Ak{5} = Ak{5} + noiseScale*randn(dim);
+    Ck{5} = Ck{5} + noiseScale*randn(dim, 1);
+    Ak{2} = Ak{2} + noiseScale*randn(dim);
+    Ck{2} = Ck{2} + noiseScale*randn(dim, 1);
+    Ak{7} = Ak{7} + noiseScale*randn(dim);
+    Ck{7} = Ck{7} + noiseScale*randn(dim, 1);
     [X] = AffSub_Lq_weiszfeld(Ak, Ck, x0, q, iterations, projFunc);
-    if (norm(X)<300)
+    if (norm(X)<2)
         hold on, plot3(X(1), X(2), X(3), 'go');
         err = err + norm(X-xNormal);
         numValid = numValid+1;

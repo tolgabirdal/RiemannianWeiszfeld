@@ -77,7 +77,7 @@ x0 = x0./nPlanes;
 hold on, plot3(x0(1), x0(2), x0(3), 'b+');
 x0 = [-1.5; 1.5; 1.5];
 projFunc = @(x)(x);
-q = 1.5;
+q = 1.0;
 iterations = 200;
 
 w = ones(nPlanes, 1);
@@ -118,6 +118,7 @@ for trials = 1:1000
     Ck{5} = Ck{5}+randScale*randn(dim, 1);
     x0_sol = AffSub_solveNormal(w, Ak, Ck);
     [X] = AffSub_Lq_weiszfeld(Ak, Ck, x0_sol, q, iterations, projFunc);
+    
     if (norm(X)<300)
         hold on, plot3(X(1), X(2), X(3), 'go');
         err = err + norm(X-xNormal);
